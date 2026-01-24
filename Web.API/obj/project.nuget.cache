@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9ursXzRJNsE=",
+  "dgSpecHash": "VkGit6Ir00Q=",
   "success": true,
-  "projectFilePath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
+  "projectFilePath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Shinji\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\Shinji\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

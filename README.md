@@ -8,14 +8,6 @@ Dự án gồm 2 phần:
 - **Web.API**: REST API Server (ASP.NET Core MVC)
 - **Web.Client**: Web Client giao diện người dùng (ASP.NET Core MVC)
 
-## 🛠 Yêu cầu hệ thống
-
-- **.NET 10 SDK** trở lên
-- **SQL Server** (LocalDB hoặc SQL Server)
-- **Visual Studio 2022** hoặc **VS Code**
-
-## ⚙️ Cấu hình
-
 ### Connection String
 
 Mở file `appsettings.json` trong thư mục `Web.API` và `Web.Client`, cập nhật connection string phù hợp với máy của bạn:
@@ -29,19 +21,6 @@ Mở file `appsettings.json` trong thư mục `Web.API` và `Web.Client`, cập 
 ```
 
 ## 🚀 Hướng dẫn chạy project
-
-### Cách 1: Sử dụng Visual Studio
-
-1. Mở file `Kiemtra2.sln` bằng Visual Studio
-2. Mở **Package Manager Console** (Tools > NuGet Package Manager > Package Manager Console)
-3. Chọn **Default project**: `Web.API`
-4. Chạy lệnh để tạo database và seeding data:
-   ```
-   Update-Database
-   ```
-5. Nhấn **F5** hoặc chọn **Debug > Start Debugging** để chạy
-
-### Cách 2: Sử dụng Command Line / Terminal
 
 1. Mở terminal và di chuyển đến thư mục project:
    ```bash
@@ -129,11 +108,3 @@ Kiemtra2/
 5. **Quản lý Transactions (Giao dịch)**
    - Theo dõi thu/chi
    - Phân loại theo danh mục
-
-## 👨‍💻 Tác giả
-
-- **MSSV**: 133
-- **Môn học**: BackEnd Development
-
----
-*Bài kiểm tra thực hành - Ngày 24/01/2026*
