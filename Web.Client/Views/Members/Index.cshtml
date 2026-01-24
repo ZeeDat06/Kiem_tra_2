@@ -1,0 +1,306 @@
+@model IEnumerable<Web.Client.Models.Member>
+
+@{
+    ViewData["Title"] = "Quản lý Hội viên";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 25px 30px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    .page-header h2 {
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    .data-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .table-row-animated {
+        animation: fadeInRow 0.5s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes fadeInRow {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .btn-action {
+        transition: all 0.3s ease;
+        margin: 0 2px;
+    }
+    .btn-action:hover {
+        transform: scale(1.15);
+    }
+    .rank-badge {
+        animation: pulse 2s ease-in-out infinite;
+    }
+    .modal-header.bg-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
+    .modal-header.bg-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; }
+    .modal-header.bg-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%) !important; }
+    .modal-header.bg-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center animate__animated animate__fadeInDown">
+    <h2><i class="bi bi-people me-2"></i>Quản lý Hội viên</h2>
+    <button type="button" class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Thêm hội viên
+    </button>
+</div>
+
+<div class="card data-card animate__animated animate__fadeInUp">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Họ tên</th>
+                        <th>Ngày sinh</th>
+                        <th>SĐT</th>
+                        <th>Ngày tham gia</th>
+                        <th>Trình độ</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{var index = 1;}
+                    @foreach (var item in Model)
+                    {
+                        <tr class="table-row-animated" style="animation-delay: @(index * 0.05)s;">
+                            <td><strong>@index</strong></td>
+                            <td>
+                                <span class="fw-bold">@item.FullName</span>
+                                @if (!string.IsNullOrEmpty(item.RankBadge))
+                                {
+                                    <span class="@item.RankBadgeClass ms-1 rank-badge">@item.RankBadge</span>
+                                }
+                            </td>
+                            <td>@(item.DOB?.ToString("dd/MM/yyyy") ?? "-")</td>
+                            <td>@(item.PhoneNumber ?? "-")</td>
+                            <td><i class="bi bi-calendar-event me-1 text-muted"></i>@item.JoinDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge bg-primary fs-6">@item.RankLevel.ToString("F1")</span>
+                            </td>
+                            <td>
+                                @if (item.Status == Web.Client.Models.MemberStatus.Active)
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary"><i class="bi bi-pause-circle me-1"></i>Không hoạt động</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-info btn-sm btn-action" title="Xem chi tiết"
+                                        onclick="showDetails(@item.Id, '@item.FullName', '@(item.DOB?.ToString("dd/MM/yyyy") ?? "N/A")', '@(item.PhoneNumber ?? "N/A")', '@item.JoinDate.ToString("dd/MM/yyyy")', '@item.RankLevel.ToString("F1")', '@item.Status')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm btn-action" title="Chỉnh sửa"
+                                        onclick="showEdit(@item.Id, '@item.FullName', '@(item.DOB?.ToString("yyyy-MM-dd") ?? "")', '@(item.PhoneNumber ?? "")', '@item.JoinDate.ToString("yyyy-MM-dd")', '@item.RankLevel', '@((int)item.Status)')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm btn-action" title="Xóa"
+                                        onclick="showDelete(@item.Id, '@item.FullName')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-people display-1 text-muted"></i>
+                <p class="lead text-muted mt-3">Chưa có hội viên nào.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Thêm mới -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-lg me-2"></i>Thêm Hội viên mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên <span class="text-danger">*</span></label>
+                        <input type="text" name="FullName" class="form-control" required placeholder="Nhập họ tên" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ngày sinh</label>
+                        <input type="date" name="DOB" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="PhoneNumber" class="form-control" placeholder="0123456789" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg me-1"></i>Thêm mới
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xem chi tiết -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Chi tiết Hội viên</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr><th width="40%">Họ tên:</th><td id="detail_fullname" class="fw-bold"></td></tr>
+                    <tr><th>Ngày sinh:</th><td id="detail_dob"></td></tr>
+                    <tr><th>Số điện thoại:</th><td id="detail_phone"></td></tr>
+                    <tr><th>Ngày tham gia:</th><td id="detail_joindate"></td></tr>
+                    <tr><th>Trình độ:</th><td id="detail_rank"></td></tr>
+                    <tr><th>Trạng thái:</th><td id="detail_status"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Chỉnh sửa Hội viên</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="edit_id" />
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên <span class="text-danger">*</span></label>
+                        <input type="text" name="FullName" id="edit_fullname" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ngày sinh</label>
+                        <input type="date" name="DOB" id="edit_dob" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="PhoneNumber" id="edit_phone" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ngày tham gia</label>
+                        <input type="date" name="JoinDate" id="edit_joindate" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Trình độ</label>
+                        <input type="number" name="RankLevel" id="edit_rank" class="form-control" step="0.1" min="1" max="10" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái</label>
+                        <select name="Status" id="edit_status" class="form-select">
+                            <option value="0">Hoạt động</option>
+                            <option value="1">Không hoạt động</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-lg me-1"></i>Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Delete" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="delete_id" />
+                    <div class="text-center">
+                        <i class="bi bi-exclamation-triangle text-warning display-1"></i>
+                        <p class="mt-3 fs-5">Bạn có chắc chắn muốn xóa hội viên</p>
+                        <p class="fw-bold fs-4 text-danger" id="delete_name"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Xóa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showDetails(id, fullname, dob, phone, joindate, rank, status) {
+        document.getElementById('detail_fullname').textContent = fullname;
+        document.getElementById('detail_dob').textContent = dob;
+        document.getElementById('detail_phone').textContent = phone;
+        document.getElementById('detail_joindate').textContent = joindate;
+        document.getElementById('detail_rank').innerHTML = '<span class="badge bg-primary">' + rank + '</span>';
+        document.getElementById('detail_status').innerHTML = status === 'Active' 
+            ? '<span class="badge bg-success">Hoạt động</span>' 
+            : '<span class="badge bg-secondary">Không hoạt động</span>';
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    }
+
+    function showEdit(id, fullname, dob, phone, joindate, rank, status) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_fullname').value = fullname;
+        document.getElementById('edit_dob').value = dob;
+        document.getElementById('edit_phone').value = phone;
+        document.getElementById('edit_joindate').value = joindate;
+        document.getElementById('edit_rank').value = rank;
+        document.getElementById('edit_status').value = status;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function showDelete(id, fullname) {
+        document.getElementById('delete_id').value = id;
+        document.getElementById('delete_name').textContent = fullname + '?';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+}

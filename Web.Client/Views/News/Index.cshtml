@@ -1,0 +1,341 @@
+@model IEnumerable<Web.Client.Models.News>
+@{
+    ViewData["Title"] = "Tin tức & Thông báo";
+    var members = ViewBag.Members as List<Web.Client.Models.Member>;
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+        padding: 25px 30px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(13, 202, 240, 0.3);
+    }
+    .page-header h2 { margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .news-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        transition: all 0.4s ease;
+        overflow: hidden;
+    }
+    .news-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    .news-card.pinned {
+        border: 2px solid #dc3545;
+        background: linear-gradient(135deg, #fff 0%, #ffe6e6 100%);
+    }
+    .card-animate {
+        animation: cardFadeIn 0.6s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes cardFadeIn {
+        from { opacity: 0; transform: translateY(30px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .author-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 12px;
+    }
+    .modal-header.bg-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
+    .modal-header.bg-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; }
+    .modal-header.bg-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%) !important; }
+    .modal-header.bg-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center animate__animated animate__fadeInDown">
+    <h2><i class="bi bi-newspaper me-2"></i>Tin tức & Thông báo</h2>
+    <button type="button" class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Đăng tin mới
+    </button>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @{ var cardIndex = 0; }
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card news-card h-100 @(item.IsPinned ? "pinned" : "") card-animate" style="animation-delay: @(cardIndex * 0.1)s;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold mb-0">@item.Title</h5>
+                            @if (item.IsPinned)
+                            {
+                                <span class="badge bg-danger"><i class="bi bi-pin-angle-fill"></i> Ghim</span>
+                            }
+                        </div>
+                        <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                            <div class="author-avatar">@(item.Author?.FullName?.Substring(0, 1).ToUpper() ?? "?")</div>
+                            <div>
+                                <strong>@item.Author?.FullName</strong>
+                                <small class="d-block text-muted"><i class="bi bi-clock me-1"></i>@item.PublishedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                        <p class="text-secondary">
+                            @if (item.Content.Length > 200)
+                            {
+                                @(item.Content.Substring(0, 200) + "...")
+                            }
+                            else
+                            {
+                                @item.Content
+                            }
+                        </p>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-info btn-sm" onclick="showDetails(@item.Id, '@item.Title', '@item.Author?.FullName', '@item.PublishedAt.ToString("dd/MM/yyyy HH:mm")', @item.IsPinned.ToString().ToLower())">
+                                    <i class="bi bi-eye"></i> Xem
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm" 
+                                        onclick="showEdit(@item.Id, '@item.Title', @item.AuthorId, @item.IsPinned.ToString().ToLower())">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="showDelete(@item.Id, '@item.Title')">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </button>
+                            </div>
+                            @if (!item.IsPinned)
+                            {
+                                <form asp-action="Pin" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-pin"></i> Ghim</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Unpin" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pin-angle"></i> Bỏ ghim</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            cardIndex++;
+        }
+    </div>
+}
+else
+{
+    <div class="text-center py-5 animate__animated animate__fadeIn">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <p class="lead text-muted mt-3">Chưa có tin tức nào.</p>
+    </div>
+}
+
+<!-- Modal Tạo mới -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-newspaper me-2"></i>Đăng Tin mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" name="Title" class="form-control" required placeholder="Nhập tiêu đề tin" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tác giả <span class="text-danger">*</span></label>
+                            <select name="AuthorId" class="form-select" required>
+                                <option value="">-- Chọn tác giả --</option>
+                                @if (members != null)
+                                {
+                                    @foreach (var m in members)
+                                    {
+                                        <option value="@m.Id">@m.FullName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" name="IsPinned" value="true" class="form-check-input" id="createIsPinned" />
+                                <label class="form-check-label" for="createIsPinned">
+                                    <i class="bi bi-pin-angle text-danger me-1"></i>Ghim tin này
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung <span class="text-danger">*</span></label>
+                        <textarea name="Content" class="form-control" rows="6" required placeholder="Nhập nội dung tin..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Đăng tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="detail_modal_title"><i class="bi bi-eye me-2"></i>Chi tiết Tin</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Đang tải...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Chỉnh sửa Tin</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="edit_id" />
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" name="Title" id="edit_title" class="form-control" required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tác giả</label>
+                            <select name="AuthorId" id="edit_author" class="form-select">
+                                @if (members != null)
+                                {
+                                    @foreach (var m in members)
+                                    {
+                                        <option value="@m.Id">@m.FullName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" name="IsPinned" value="true" class="form-check-input" id="edit_ispinned" />
+                                <label class="form-check-label" for="edit_ispinned">
+                                    <i class="bi bi-pin-angle text-danger me-1"></i>Ghim tin này
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung <span class="text-danger">*</span></label>
+                        <textarea name="Content" id="edit_content" class="form-control" rows="6" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Delete" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="delete_id" />
+                    <div class="text-center">
+                        <i class="bi bi-exclamation-triangle text-warning display-1"></i>
+                        <p class="mt-3 fs-5">Bạn có chắc chắn muốn xóa tin</p>
+                        <p class="fw-bold fs-4 text-danger" id="delete_name"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showDetails(id, title, author, date, isPinned) {
+        var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        var content = document.getElementById('detailsContent');
+        document.getElementById('detail_modal_title').innerHTML = '<i class="bi bi-eye me-2"></i>' + title;
+        content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Đang tải...</p></div>';
+        modal.show();
+        
+        fetch('/News/Details/' + id)
+            .then(response => response.text())
+            .then(html => {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var cardBody = doc.querySelector('.card-body');
+                content.innerHTML = cardBody ? cardBody.innerHTML : '<p>Không tìm thấy dữ liệu</p>';
+            })
+            .catch(err => {
+                content.innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu</div>';
+            });
+    }
+
+    function showEdit(id, title, authorId, isPinned) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_title').value = title;
+        document.getElementById('edit_author').value = authorId;
+        document.getElementById('edit_ispinned').checked = isPinned;
+        
+        // Load content via fetch
+        fetch('/News/Details/' + id)
+            .then(response => response.text())
+            .then(html => {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var contentEl = doc.querySelector('.card-text');
+                if (contentEl) {
+                    document.getElementById('edit_content').value = contentEl.textContent.trim();
+                }
+            });
+        
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function showDelete(id, title) {
+        document.getElementById('delete_id').value = id;
+        document.getElementById('delete_name').textContent = '"' + title + '"?';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+}

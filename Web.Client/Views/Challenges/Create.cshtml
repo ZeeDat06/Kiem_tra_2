@@ -1,0 +1,90 @@
+@model Web.Client.Models.Challenge
+
+@{
+    ViewData["Title"] = "Tạo Kèo mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-lightning me-2"></i>Tạo Kèo mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Title" class="form-label"></label>
+                            <input asp-for="Title" class="form-control" placeholder="VD: Kèo Đơn thứ 7" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CreatorId" class="form-label"></label>
+                            <select asp-for="CreatorId" class="form-select" asp-items="@(ViewData["CreatorId"] as SelectList)">
+                                <option value="">-- Chọn người tạo --</option>
+                            </select>
+                            <span asp-validation-for="CreatorId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="2" placeholder="Mô tả kèo đấu..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Mode" class="form-label"></label>
+                            <select asp-for="Mode" class="form-select" id="modeSelect">
+                                <option value="0">Đơn (Singles)</option>
+                                <option value="1">Đôi (Doubles)</option>
+                                <option value="2">Mini-game</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3" id="entryFeeGroup" style="display: none;">
+                            <label asp-for="EntryFee" class="form-label">Lệ phí tham gia</label>
+                            <div class="input-group">
+                                <input asp-for="EntryFee" class="form-control" type="number" step="1000" placeholder="20000" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                            <small class="text-muted">Nhập lệ phí cho Mini-game</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="RewardDescription" class="form-label">Phần thưởng</label>
+                        <input asp-for="RewardDescription" class="form-control" placeholder="VD: Chầu cafe, 20 quả trứng, Nồi lẩu..." />
+                        <small class="text-muted">Nhập text tự do mô tả phần thưởng</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>Tạo kèo
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('modeSelect').addEventListener('change', function() {
+            var entryFeeGroup = document.getElementById('entryFeeGroup');
+            if (this.value === '2') { // MiniGame
+                entryFeeGroup.style.display = 'block';
+            } else {
+                entryFeeGroup.style.display = 'none';
+            }
+        });
+    </script>
+}

@@ -1,0 +1,294 @@
+﻿@using Web.Client.Models
+@{
+    ViewData["Title"] = "Trang chủ";
+    var balance = (decimal)ViewBag.Balance;
+    var isNegative = (bool)ViewBag.IsNegative;
+    var openChallenges = (int)ViewBag.OpenChallenges;
+    var topMembers = ViewBag.TopMembers as List<Member>;
+    var latestNews = ViewBag.LatestNews as List<News>;
+    var openChallengesList = ViewBag.OpenChallengesList as List<Challenge>;
+}
+
+<style>
+    .stat-icon {
+        animation: pulse 2s ease-in-out infinite;
+    }
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+    }
+    .animate-delay-1 { animation-delay: 0.1s; }
+    .animate-delay-2 { animation-delay: 0.2s; }
+    .animate-delay-3 { animation-delay: 0.3s; }
+    .challenge-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .challenge-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    .rank-badge {
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+    @@keyframes glow {
+        from { filter: drop-shadow(0 0 2px currentColor); }
+        to { filter: drop-shadow(0 0 10px currentColor); }
+    }
+    .news-item {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+    .news-item:hover {
+        background-color: rgba(13, 202, 240, 0.1);
+        border-left-color: #0dcaf0;
+        padding-left: 15px;
+    }
+    .pin-badge {
+        animation: swing 1s ease-in-out infinite;
+    }
+    @@keyframes swing {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(10deg); }
+        75% { transform: rotate(-10deg); }
+    }
+</style>
+
+<!-- Dashboard Stats -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3 animate__animated animate__fadeInUp animate-delay-1">
+        <div class="card stat-card balance h-100 glow-on-hover">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Số dư Quỹ</h6>
+                        <h3 class="mb-0 @(isNegative ? "text-danger" : "text-success")">
+                            @balance.ToString("N0")đ
+                        </h3>
+                    </div>
+                    <div class="fs-1 text-success stat-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+                @if (isNegative)
+                {
+                    <div class="mt-2 warning-negative text-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        CẢNH BÁO: QUỸ ĐANG ÂM! Cần bổ sung nguồn tiền ngay.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3 animate__animated animate__fadeInUp animate-delay-2">
+        <div class="card stat-card challenges h-100 glow-on-hover">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Kèo đang mở</h6>
+                        <h3 class="mb-0 text-primary">@openChallenges</h3>
+                    </div>
+                    <div class="fs-1 text-primary stat-icon">
+                        <i class="bi bi-lightning-fill"></i>
+                    </div>
+                </div>
+                <a asp-controller="Challenges" asp-action="Index" class="btn btn-outline-primary btn-sm mt-2">
+                    Xem tất cả <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3 animate__animated animate__fadeInUp animate-delay-3">
+        <div class="card stat-card members h-100 glow-on-hover">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Top Player</h6>
+                        @if (topMembers?.Count > 0)
+                        {
+                            <h4 class="mb-0">
+                                @topMembers[0].FullName
+                                @if (!string.IsNullOrEmpty(topMembers[0].RankBadge))
+                                {
+                                    <span class="@topMembers[0].RankBadgeClass ms-1 rank-badge">@topMembers[0].RankBadge</span>
+                                }
+                            </h4>
+                            <small class="text-muted">Rank: @topMembers[0].RankLevel.ToString("F1")</small>
+                        }
+                    </div>
+                    <div class="fs-1 text-warning stat-icon">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Open Challenges -->
+    <div class="col-lg-8 mb-4 animate__animated animate__fadeInLeft">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Sàn đấu - Kèo đang mở</h5>
+                <a asp-controller="Challenges" asp-action="Create" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-lg"></i> Tạo kèo
+                </a>
+            </div>
+            <div class="card-body">
+                @if (openChallengesList?.Count > 0)
+                {
+                    <div class="row">
+                        @{ var delayIndex = 0; }
+                        @foreach (var challenge in openChallengesList)
+                        {
+                            <div class="col-md-6 mb-3">
+                                <div class="card challenge-card h-100" style="animation-delay: @(delayIndex * 0.1)s;">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">@challenge.Title</h6>
+                                            <span class="@challenge.StatusBadgeClass">@challenge.StatusDisplay</span>
+                                        </div>
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-person me-1"></i>@challenge.Creator?.FullName |
+                                            <span class="badge bg-secondary">@challenge.ModeDisplay</span>
+                                        </p>
+                                        @if (!string.IsNullOrEmpty(challenge.RewardDescription))
+                                        {
+                                            <p class="mb-2">
+                                                <i class="bi bi-gift text-warning me-1"></i>
+                                                <strong>Phần thưởng:</strong> @challenge.RewardDescription
+                                            </p>
+                                        }
+                                        @if (challenge.Mode == ChallengeMode.MiniGame && challenge.EntryFee > 0)
+                                        {
+                                            <div class="alert alert-success py-2 mb-2">
+                                                <i class="bi bi-cash me-1"></i>
+                                                <strong>Quỹ thưởng:</strong> @challenge.TotalPot.ToString("N0")đ
+                                                <small class="d-block text-muted">(@challenge.Participants.Count người × @challenge.EntryFee.ToString("N0")đ)</small>
+                                            </div>
+                                        }
+                                        <p class="small text-muted mb-0">
+                                            <i class="bi bi-people me-1"></i>@challenge.Participants.Count người tham gia
+                                        </p>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <a asp-controller="Challenges" asp-action="Details" asp-route-id="@challenge.Id" class="btn btn-outline-primary btn-sm">
+                                            Xem chi tiết <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            delayIndex++;
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-emoji-neutral fs-1 floating"></i>
+                        <p class="mt-3">Chưa có kèo nào đang mở. Hãy tạo kèo mới!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4 animate__animated animate__fadeInRight">
+        <!-- Top 5 BXH -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>BXH Top 5</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                @if (topMembers != null)
+                {
+                    var rank = 1;
+                    foreach (var member in topMembers)
+                    {
+                        // Màu theo vị trí: 1=Vàng(Pro), 2=Bạc, 3=Đồng, 4=Xanh dương, 5=Xanh lá(Newbie)
+                        var rankBgClass = rank switch
+                        {
+                            1 => "bg-warning text-dark", // Vàng - Pro/Champion
+                            2 => "bg-secondary",         // Bạc
+                            3 => "bg-danger",            // Đồng/Đỏ
+                            4 => "bg-info",              // Xanh dương
+                            _ => "bg-success"            // Xanh lá - Newbie
+                        };
+                        var rankTitle = rank switch
+                        {
+                            1 => "🏆 Pro",
+                            2 => "🥈 Advanced", 
+                            3 => "🥉 Intermediate",
+                            4 => "📘 Beginner",
+                            _ => "🌱 Newbie"
+                        };
+                        <li class="list-group-item d-flex justify-content-between align-items-center" style="animation-delay: @(rank * 0.1)s;">
+                            <div>
+                                <span class="badge @rankBgClass me-2 @(rank <= 3 ? "rank-badge" : "")" title="@rankTitle">
+                                    #@rank
+                                </span>
+                                @member.FullName
+                                @if (!string.IsNullOrEmpty(member.RankBadge))
+                                {
+                                    <span class="@member.RankBadgeClass ms-1">@member.RankBadge</span>
+                                }
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary rounded-pill">@member.RankLevel.ToString("F1")</span>
+                                <small class="d-block text-muted" style="font-size: 0.7rem;">@rankTitle</small>
+                            </div>
+                        </li>
+                        rank++;
+                    }
+                }
+            </ul>
+            <div class="card-footer">
+                <a asp-controller="Members" asp-action="Index" class="btn btn-outline-warning btn-sm w-100">
+                    Xem tất cả hội viên <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Latest News -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-newspaper me-2"></i>Tin tức mới</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                @if (latestNews != null)
+                {
+                    foreach (var news in latestNews)
+                    {
+                        <li class="list-group-item news-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <a asp-controller="News" asp-action="Details" asp-route-id="@news.Id" class="text-decoration-none fw-bold">
+                                    @news.Title
+                                </a>
+                                <small class="d-block text-muted">
+                                    <i class="bi bi-clock me-1"></i>@news.PublishedAt.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            </div>
+                            @if (news.IsPinned)
+                            {
+                                <span class="badge bg-danger pin-badge"><i class="bi bi-pin-angle-fill"></i></span>
+                            }
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="list-group-item text-muted text-center py-3">
+                        <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                        Chưa có tin tức
+                    </li>
+                }
+            </ul>
+            <div class="card-footer">
+                <a asp-controller="News" asp-action="Index" class="btn btn-outline-info btn-sm w-100">
+                    Xem tất cả tin tức <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

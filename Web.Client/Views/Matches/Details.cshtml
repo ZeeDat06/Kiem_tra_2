@@ -1,0 +1,108 @@
+@model Web.Client.Models.Match
+
+@{
+    ViewData["Title"] = "Chi tiết Trận đấu";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-journal-check me-2"></i>Chi tiết Trận đấu
+                    @if (Model.IsRanked)
+                    {
+                        <span class="badge bg-warning text-dark ms-2"><i class="bi bi-trophy"></i> Xếp hạng</span>
+                    }
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h5 class="text-muted">@Model.PlayedAt.ToString("dddd, dd/MM/yyyy HH:mm")</h5>
+                    <span class="badge bg-secondary fs-6">@Model.FormatDisplay</span>
+                </div>
+                
+                <div class="row text-center align-items-center">
+                    <div class="col-5">
+                        <div class="card bg-success bg-opacity-10 border-success">
+                            <div class="card-body">
+                                <h5 class="text-success">Đội 1</h5>
+                                @if (Model.Format == Web.Client.Models.MatchFormat.Singles)
+                                {
+                                    <p class="mb-0 fw-bold">@Model.Player1?.FullName</p>
+                                    @if (!string.IsNullOrEmpty(Model.Player1?.RankBadge))
+                                    {
+                                        <small class="@Model.Player1?.RankBadgeClass">@Model.Player1?.RankBadge</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="mb-0 fw-bold">@Model.Player1?.FullName</p>
+                                    @if (!string.IsNullOrEmpty(Model.Player1?.RankBadge))
+                                    {
+                                        <small class="@Model.Player1?.RankBadgeClass">@Model.Player1?.RankBadge</small>
+                                    }
+                                    <p class="mb-0 fw-bold mt-2">@Model.Player3?.FullName</p>
+                                    @if (!string.IsNullOrEmpty(Model.Player3?.RankBadge))
+                                    {
+                                        <small class="@Model.Player3?.RankBadgeClass">@Model.Player3?.RankBadge</small>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="display-4 fw-bold">
+                            <span class="text-success">@Model.ScoreTeam1</span>
+                            <span class="text-muted">-</span>
+                            <span class="text-danger">@Model.ScoreTeam2</span>
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="card bg-danger bg-opacity-10 border-danger">
+                            <div class="card-body">
+                                <h5 class="text-danger">Đội 2</h5>
+                                @if (Model.Format == Web.Client.Models.MatchFormat.Singles)
+                                {
+                                    <p class="mb-0 fw-bold">@Model.Player2?.FullName</p>
+                                    @if (!string.IsNullOrEmpty(Model.Player2?.RankBadge))
+                                    {
+                                        <small class="@Model.Player2?.RankBadgeClass">@Model.Player2?.RankBadge</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="mb-0 fw-bold">@Model.Player2?.FullName</p>
+                                    @if (!string.IsNullOrEmpty(Model.Player2?.RankBadge))
+                                    {
+                                        <small class="@Model.Player2?.RankBadgeClass">@Model.Player2?.RankBadge</small>
+                                    }
+                                    <p class="mb-0 fw-bold mt-2">@Model.Player4?.FullName</p>
+                                    @if (!string.IsNullOrEmpty(Model.Player4?.RankBadge))
+                                    {
+                                        <small class="@Model.Player4?.RankBadgeClass">@Model.Player4?.RankBadge</small>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <hr />
+                    <h6><i class="bi bi-chat-text me-1"></i>Ghi chú:</h6>
+                    <p>@Model.Notes</p>
+                }
+            </div>
+            <div class="card-footer">
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>Xóa
+                </a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

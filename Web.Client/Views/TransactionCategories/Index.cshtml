@@ -1,0 +1,324 @@
+@model IEnumerable<Web.Client.Models.TransactionCategory>
+
+@{
+    ViewData["Title"] = "Danh mục Thu/Chi";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 25px 30px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    .page-header h2 { margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .table-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    }
+    .table-modern thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .table-modern tbody tr {
+        transition: all 0.3s ease;
+    }
+    .table-modern tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+    }
+    .row-animate {
+        animation: rowFadeIn 0.5s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes rowFadeIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .modal-header.bg-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
+    .modal-header.bg-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; }
+    .modal-header.bg-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%) !important; }
+    .modal-header.bg-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+    .type-btn {
+        padding: 15px 25px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    .type-btn:hover { transform: translateY(-3px); }
+    .type-btn.selected-thu { border-color: #28a745; background: #d4edda; }
+    .type-btn.selected-chi { border-color: #dc3545; background: #f8d7da; }
+    .category-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    .icon-thu { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+    .icon-chi { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); color: white; }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center animate__animated animate__fadeInDown">
+    <h2><i class="bi bi-tags me-2"></i>Danh mục Thu/Chi</h2>
+    <button type="button" class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Thêm danh mục
+    </button>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-6 animate__animated animate__fadeInLeft">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="card-body text-white">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-arrow-down-circle display-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Danh mục THU</h6>
+                        <h2 class="mb-0">@Model.Count(c => c.Type == Web.Client.Models.TransactionType.Thu)</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 animate__animated animate__fadeInRight">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
+            <div class="card-body text-white">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-arrow-up-circle display-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Danh mục CHI</h6>
+                        <h2 class="mb-0">@Model.Count(c => c.Type == Web.Client.Models.TransactionType.Chi)</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card table-card animate__animated animate__fadeInUp">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4" width="5%">#</th>
+                        <th width="50%"><i class="bi bi-tag me-1"></i>Tên danh mục</th>
+                        <th width="25%"><i class="bi bi-arrow-left-right me-1"></i>Loại</th>
+                        <th class="text-center" width="20%"><i class="bi bi-gear me-1"></i>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{var index = 1;}
+                    @foreach (var item in Model)
+                    {
+                        var isThu = item.Type == Web.Client.Models.TransactionType.Thu;
+                        <tr class="row-animate" style="animation-delay: @((index - 1) * 0.05)s;">
+                            <td class="ps-4 fw-bold text-muted">@index</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="category-icon @(isThu ? "icon-thu" : "icon-chi") me-3">
+                                        <i class="bi @(isThu ? "bi-arrow-down-circle" : "bi-arrow-up-circle")"></i>
+                                    </div>
+                                    <strong>@item.CategoryName</strong>
+                                </div>
+                            </td>
+                            <td>
+                                @if (isThu)
+                                {
+                                    <span class="badge bg-success fs-6 px-3 py-2">
+                                        <i class="bi bi-arrow-down-circle me-1"></i>Thu
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger fs-6 px-3 py-2">
+                                        <i class="bi bi-arrow-up-circle me-1"></i>Chi
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-warning btn-sm" 
+                                            onclick="showEdit(@item.Id, '@item.CategoryName', @((int)item.Type))">
+                                        <i class="bi bi-pencil me-1"></i>Sửa
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="showDelete(@item.Id, '@item.CategoryName')">
+                                        <i class="bi bi-trash me-1"></i>Xóa
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="lead text-muted mt-3">Chưa có danh mục nào.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Tạo mới -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Thêm Danh mục mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                        <input type="text" name="CategoryName" class="form-control" required placeholder="VD: Phí thành viên, Tiền sân..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Loại danh mục <span class="text-danger">*</span></label>
+                        <input type="hidden" name="Type" id="create_type" value="0" required />
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="type-btn text-center" id="create_thu_btn" onclick="selectCreateType(0)">
+                                    <i class="bi bi-arrow-down-circle text-success display-4"></i>
+                                    <p class="mb-0 mt-2 fw-bold text-success">THU</p>
+                                    <small class="text-muted">Tiền vào quỹ</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="type-btn text-center" id="create_chi_btn" onclick="selectCreateType(1)">
+                                    <i class="bi bi-arrow-up-circle text-danger display-4"></i>
+                                    <p class="mb-0 mt-2 fw-bold text-danger">CHI</p>
+                                    <small class="text-muted">Tiền ra quỹ</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Thêm danh mục</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Chỉnh sửa Danh mục</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="edit_id" />
+                    <div class="mb-3">
+                        <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                        <input type="text" name="CategoryName" id="edit_name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Loại danh mục <span class="text-danger">*</span></label>
+                        <input type="hidden" name="Type" id="edit_type" required />
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="type-btn text-center" id="edit_thu_btn" onclick="selectEditType(0)">
+                                    <i class="bi bi-arrow-down-circle text-success display-4"></i>
+                                    <p class="mb-0 mt-2 fw-bold text-success">THU</p>
+                                    <small class="text-muted">Tiền vào quỹ</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="type-btn text-center" id="edit_chi_btn" onclick="selectEditType(1)">
+                                    <i class="bi bi-arrow-up-circle text-danger display-4"></i>
+                                    <p class="mb-0 mt-2 fw-bold text-danger">CHI</p>
+                                    <small class="text-muted">Tiền ra quỹ</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Delete" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="delete_id" />
+                    <div class="text-center">
+                        <i class="bi bi-exclamation-triangle text-warning display-1"></i>
+                        <p class="mt-3 fs-5">Bạn có chắc chắn muốn xóa danh mục</p>
+                        <p class="fw-bold fs-4 text-danger" id="delete_name"></p>
+                        <p class="text-muted">⚠️ Lưu ý: Các giao dịch thuộc danh mục này cũng sẽ bị ảnh hưởng!</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Initial state for create modal
+    selectCreateType(0);
+
+    function selectCreateType(type) {
+        document.getElementById('create_type').value = type;
+        document.getElementById('create_thu_btn').className = 'type-btn text-center' + (type === 0 ? ' selected-thu' : '');
+        document.getElementById('create_chi_btn').className = 'type-btn text-center' + (type === 1 ? ' selected-chi' : '');
+    }
+
+    function selectEditType(type) {
+        document.getElementById('edit_type').value = type;
+        document.getElementById('edit_thu_btn').className = 'type-btn text-center' + (type === 0 ? ' selected-thu' : '');
+        document.getElementById('edit_chi_btn').className = 'type-btn text-center' + (type === 1 ? ' selected-chi' : '');
+    }
+
+    function showEdit(id, name, type) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_name').value = name;
+        selectEditType(type);
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function showDelete(id, name) {
+        document.getElementById('delete_id').value = id;
+        document.getElementById('delete_name').textContent = '"' + name + '"?';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+}

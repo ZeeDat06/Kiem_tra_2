@@ -1,0 +1,354 @@
+@model IEnumerable<Web.Client.Models.Match>
+@{
+    ViewData["Title"] = "Quản lý Trận đấu";
+    var members = ViewBag.Members as List<Web.Client.Models.Member>;
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        padding: 25px 30px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(17, 153, 142, 0.3);
+    }
+    .page-header h2 { margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .match-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .vs-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+    .score-display { font-size: 1.5rem; font-weight: bold; }
+    .score-win { color: #28a745; }
+    .score-lose { color: #dc3545; }
+    .table-row-animated {
+        animation: fadeInRow 0.5s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes fadeInRow {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .modal-header.bg-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
+    .modal-header.bg-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; }
+    .modal-header.bg-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%) !important; }
+    .modal-header.bg-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center animate__animated animate__fadeInDown">
+    <h2><i class="bi bi-journal-check me-2"></i>Quản lý Trận đấu</h2>
+    <button type="button" class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Ghi nhận trận mới
+    </button>
+</div>
+
+@if (Model.Any())
+{
+    <div class="card match-card animate__animated animate__fadeInUp">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><i class="bi bi-calendar3 me-1"></i>Ngày</th>
+                            <th><i class="bi bi-controller me-1"></i>Chế độ</th>
+                            <th><i class="bi bi-people me-1"></i>Người chơi</th>
+                            <th class="text-center"><i class="bi bi-trophy me-1"></i>Tỷ số</th>
+                            <th>Xếp hạng?</th>
+                            <th>Ghi chú</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var rowIndex = 0; }
+                        @foreach (var item in Model)
+                        {
+                            <tr class="table-row-animated" style="animation-delay: @(rowIndex * 0.08)s;">
+                                <td>
+                                    <i class="bi bi-clock text-muted me-1"></i>
+                                    @item.PlayedAt.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td>
+                                    @if (item.Format == Web.Client.Models.MatchFormat.Singles)
+                                    {
+                                        <span class="badge bg-info fs-6"><i class="bi bi-person me-1"></i>Đơn</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary fs-6"><i class="bi bi-people me-1"></i>Đôi</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Format == Web.Client.Models.MatchFormat.Singles)
+                                    {
+                                        <span class="text-success fw-bold">@item.Player1?.FullName</span>
+                                        <span class="vs-badge mx-2">VS</span>
+                                        <span class="text-danger fw-bold">@item.Player2?.FullName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success fw-bold">@item.Player1?.FullName & @item.Player3?.FullName</span>
+                                        <span class="vs-badge mx-2">VS</span>
+                                        <span class="text-danger fw-bold">@item.Player2?.FullName & @item.Player4?.FullName</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="score-display @(item.ScoreTeam1 > item.ScoreTeam2 ? "score-win" : "score-lose")">@item.ScoreTeam1</span>
+                                    <span class="mx-2 text-muted">-</span>
+                                    <span class="score-display @(item.ScoreTeam2 > item.ScoreTeam1 ? "score-win" : "score-lose")">@item.ScoreTeam2</span>
+                                </td>
+                                <td>
+                                    @if (item.IsRanked)
+                                    {
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-trophy-fill me-1"></i>Có</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Không</span>
+                                    }
+                                </td>
+                                <td><small class="text-muted">@(item.Notes ?? "-")</small></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-info btn-sm" title="Xem chi tiết"
+                                            onclick="showDetails(@item.Id, '@item.PlayedAt.ToString("dd/MM/yyyy HH:mm")', '@item.Format', '@item.Player1?.FullName', '@item.Player2?.FullName', '@item.Player3?.FullName', '@item.Player4?.FullName', @item.ScoreTeam1, @item.ScoreTeam2, @item.IsRanked.ToString().ToLower(), '@(item.Notes ?? "")')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" title="Xóa"
+                                            onclick="showDelete(@item.Id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            rowIndex++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5 animate__animated animate__fadeIn">
+        <i class="bi bi-calendar-x display-1 text-muted"></i>
+        <p class="lead text-muted mt-3">Chưa có trận đấu nào được ghi nhận.</p>
+    </div>
+}
+
+<!-- Modal Tạo mới -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-journal-plus me-2"></i>Ghi nhận Trận đấu mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Chế độ <span class="text-danger">*</span></label>
+                            <select name="Format" class="form-select" id="createFormatSelect" required>
+                                <option value="0">Đơn (Singles)</option>
+                                <option value="1">Đôi (Doubles)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày chơi</label>
+                            <input type="datetime-local" name="PlayedAt" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3 border-success">
+                        <div class="card-header bg-success text-white">Đội 1 (Team A)</div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Người chơi 1 <span class="text-danger">*</span></label>
+                                    <select name="Player1Id" class="form-select" required>
+                                        <option value="">-- Chọn --</option>
+                                        @if (members != null)
+                                        {
+                                            @foreach (var m in members)
+                                            {
+                                                <option value="@m.Id">@m.FullName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2" id="player3Group">
+                                    <label class="form-label">Người chơi 3 (Đôi)</label>
+                                    <select name="Player3Id" class="form-select">
+                                        <option value="">-- Chọn --</option>
+                                        @if (members != null)
+                                        {
+                                            @foreach (var m in members)
+                                            {
+                                                <option value="@m.Id">@m.FullName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Điểm Đội 1</label>
+                                <input type="number" name="ScoreTeam1" class="form-control" value="0" min="0" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3 border-danger">
+                        <div class="card-header bg-danger text-white">Đội 2 (Team B)</div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Người chơi 2 <span class="text-danger">*</span></label>
+                                    <select name="Player2Id" class="form-select" required>
+                                        <option value="">-- Chọn --</option>
+                                        @if (members != null)
+                                        {
+                                            @foreach (var m in members)
+                                            {
+                                                <option value="@m.Id">@m.FullName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2" id="player4Group">
+                                    <label class="form-label">Người chơi 4 (Đôi)</label>
+                                    <select name="Player4Id" class="form-select">
+                                        <option value="">-- Chọn --</option>
+                                        @if (members != null)
+                                        {
+                                            @foreach (var m in members)
+                                            {
+                                                <option value="@m.Id">@m.FullName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Điểm Đội 2</label>
+                                <input type="number" name="ScoreTeam2" class="form-control" value="0" min="0" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="IsRanked" value="true" class="form-check-input" id="isRankedCheck" checked />
+                                <label class="form-check-label" for="isRankedCheck">
+                                    <i class="bi bi-trophy text-warning me-1"></i>Tính vào xếp hạng
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea name="Notes" class="form-control" rows="2" placeholder="Ghi chú thêm..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Lưu trận đấu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Chi tiết Trận đấu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr><th width="35%">Ngày chơi:</th><td id="detail_date"></td></tr>
+                    <tr><th>Chế độ:</th><td id="detail_format"></td></tr>
+                    <tr><th>Đội 1:</th><td id="detail_team1" class="fw-bold text-success"></td></tr>
+                    <tr><th>Đội 2:</th><td id="detail_team2" class="fw-bold text-danger"></td></tr>
+                    <tr><th>Tỷ số:</th><td id="detail_score" class="fs-4 fw-bold"></td></tr>
+                    <tr><th>Xếp hạng:</th><td id="detail_ranked"></td></tr>
+                    <tr><th>Ghi chú:</th><td id="detail_notes"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Delete" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="delete_id" />
+                    <div class="text-center">
+                        <i class="bi bi-exclamation-triangle text-warning display-1"></i>
+                        <p class="mt-3 fs-5">Bạn có chắc chắn muốn xóa trận đấu này?</p>
+                        <p class="text-muted">Hành động này không thể hoàn tác.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('createFormatSelect').addEventListener('change', function() {
+        var isDoubles = this.value === '1';
+        document.getElementById('player3Group').style.display = isDoubles ? 'block' : 'none';
+        document.getElementById('player4Group').style.display = isDoubles ? 'block' : 'none';
+    });
+    // Initial hide
+    document.getElementById('player3Group').style.display = 'none';
+    document.getElementById('player4Group').style.display = 'none';
+
+    function showDetails(id, date, format, p1, p2, p3, p4, score1, score2, isRanked, notes) {
+        document.getElementById('detail_date').textContent = date;
+        document.getElementById('detail_format').innerHTML = format === 'Singles' 
+            ? '<span class="badge bg-info">Đơn</span>' 
+            : '<span class="badge bg-primary">Đôi</span>';
+        document.getElementById('detail_team1').textContent = format === 'Singles' ? p1 : p1 + ' & ' + p3;
+        document.getElementById('detail_team2').textContent = format === 'Singles' ? p2 : p2 + ' & ' + p4;
+        document.getElementById('detail_score').innerHTML = '<span class="text-success">' + score1 + '</span> - <span class="text-danger">' + score2 + '</span>';
+        document.getElementById('detail_ranked').innerHTML = isRanked 
+            ? '<span class="badge bg-warning text-dark"><i class="bi bi-trophy-fill"></i> Có</span>'
+            : '<span class="badge bg-secondary">Không</span>';
+        document.getElementById('detail_notes').textContent = notes || '-';
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    }
+
+    function showDelete(id) {
+        document.getElementById('delete_id').value = id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+}

@@ -1,0 +1,62 @@
+@model Web.Client.Models.News
+
+@{
+    ViewData["Title"] = "Đăng tin mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Đăng tin mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề tin..." />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="AuthorId" class="form-label"></label>
+                        <select asp-for="AuthorId" class="form-select" asp-items="ViewBag.AuthorId">
+                            <option value="">-- Chọn tác giả --</option>
+                        </select>
+                        <span asp-validation-for="AuthorId" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label"></label>
+                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Nhập nội dung tin tức..."></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsPinned" class="form-check-input" type="checkbox" />
+                            <label class="form-check-label" asp-for="IsPinned">
+                                <i class="bi bi-pin-angle text-danger me-1"></i>Ghim tin này lên đầu
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-send me-1"></i>Đăng tin
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

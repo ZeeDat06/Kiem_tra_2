@@ -1,0 +1,85 @@
+@model Web.Client.Models.Challenge
+
+@{
+    ViewData["Title"] = "Sửa Kèo";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0"><i class="bi bi-pencil me-2"></i>Sửa Kèo</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Title" class="form-label"></label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CreatorId" class="form-label"></label>
+                            <select asp-for="CreatorId" class="form-select" asp-items="@(ViewData["CreatorId"] as SelectList)"></select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Mode" class="form-label"></label>
+                            <select asp-for="Mode" class="form-select">
+                                <option value="0">Đơn (Singles)</option>
+                                <option value="1">Đôi (Doubles)</option>
+                                <option value="2">Mini-game</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="EntryFee" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="EntryFee" class="form-control" type="number" step="1000" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Status" class="form-label"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="0">Đang nhận (Open)</option>
+                                <option value="1">Đã chốt (Closed)</option>
+                                <option value="2">Đã trao giải (Completed)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="RewardDescription" class="form-label"></label>
+                        <input asp-for="RewardDescription" class="form-control" />
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-lg me-1"></i>Lưu thay đổi
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

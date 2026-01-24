@@ -1,0 +1,398 @@
+@model IEnumerable<Web.Client.Models.Transaction>
+
+@{
+    ViewData["Title"] = "Quản lý Giao dịch";
+    var balance = (decimal)ViewBag.Balance;
+    var isNegative = (bool)ViewBag.IsNegative;
+    var categories = ViewBag.Categories as List<Web.Client.Models.TransactionCategory>;
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        padding: 25px 30px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(17, 153, 142, 0.3);
+    }
+    .page-header h2 { margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .balance-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s ease;
+    }
+    .balance-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    .balance-positive { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .balance-negative { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); }
+    .balance-amount {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    .table-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    }
+    .table-modern thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .table-modern tbody tr {
+        transition: all 0.3s ease;
+    }
+    .table-modern tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+    }
+    .row-animate {
+        animation: rowFadeIn 0.5s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes rowFadeIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .modal-header.bg-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
+    .modal-header.bg-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; }
+    .modal-header.bg-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%) !important; }
+    .modal-header.bg-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+    .warning-negative {
+        background: rgba(255,255,255,0.2);
+        padding: 10px 15px;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center animate__animated animate__fadeInDown">
+    <h2><i class="bi bi-cash-stack me-2"></i>Quản lý Giao dịch</h2>
+    <button type="button" class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Thêm giao dịch
+    </button>
+</div>
+
+<!-- Balance Card -->
+<div class="row mb-4">
+    <div class="col-md-6 animate__animated animate__fadeInLeft">
+        <div class="balance-card @(isNegative ? "balance-negative" : "balance-positive")">
+            <div class="card-body p-4 text-white">
+                <h5 class="mb-2"><i class="bi bi-wallet2 me-2"></i>Tổng Quỹ Hiện Tại</h5>
+                <div class="balance-amount">@balance.ToString("N0")đ</div>
+                @if (isNegative)
+                {
+                    <div class="warning-negative mt-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>CẢNH BÁO: QUỸ ĐANG ÂM!</strong> Cần bổ sung nguồn tiền ngay.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 animate__animated animate__fadeInRight">
+        <div class="row h-100">
+            <div class="col-6">
+                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-white text-center d-flex flex-column justify-content-center">
+                        <i class="bi bi-arrow-down-circle display-4 mb-2"></i>
+                        <h6>Tổng Thu</h6>
+                        <h4>@Model.Where(t => t.Category?.Type == Web.Client.Models.TransactionType.Thu).Sum(t => t.Amount).ToString("N0")đ</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="card-body text-white text-center d-flex flex-column justify-content-center">
+                        <i class="bi bi-arrow-up-circle display-4 mb-2"></i>
+                        <h6>Tổng Chi</h6>
+                        <h4>@Model.Where(t => t.Category?.Type == Web.Client.Models.TransactionType.Chi).Sum(t => t.Amount).ToString("N0")đ</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card table-card animate__animated animate__fadeInUp">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4"><i class="bi bi-calendar3 me-1"></i>Ngày</th>
+                        <th><i class="bi bi-tag me-1"></i>Danh mục</th>
+                        <th><i class="bi bi-card-text me-1"></i>Mô tả</th>
+                        <th><i class="bi bi-currency-dollar me-1"></i>Số tiền</th>
+                        <th class="text-center"><i class="bi bi-gear me-1"></i>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{var index = 0;}
+                    @foreach (var item in Model)
+                    {
+                        var isThu = item.Category?.Type == Web.Client.Models.TransactionType.Thu;
+                        <tr class="row-animate" style="animation-delay: @(index * 0.05)s;">
+                            <td class="ps-4">@item.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (isThu)
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-arrow-down-circle me-1"></i>@item.Category?.CategoryName</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>@item.Category?.CategoryName</span>
+                                }
+                            </td>
+                            <td>@item.Description</td>
+                            <td class="@(isThu ? "text-success fw-bold" : "text-danger fw-bold")">
+                                @(isThu ? "+" : "-")@item.Amount.ToString("N0")đ
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-info btn-sm" 
+                                            onclick="showDetails(@item.Id, '@item.TransactionDate.ToString("dd/MM/yyyy HH:mm")', '@item.Category?.CategoryName', '@item.Description', @item.Amount, @(isThu ? "true" : "false"))">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-warning btn-sm" 
+                                            onclick="showEdit(@item.Id, @item.Amount, '@item.Description', @item.CategoryId)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="showDelete(@item.Id, '@item.Description')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="lead text-muted mt-3">Chưa có giao dịch nào.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Tạo mới -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Thêm Giao dịch mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                        <select name="CategoryId" class="form-select" required>
+                            <option value="">-- Chọn danh mục --</option>
+                            @if (categories != null)
+                            {
+                                var thuCategories = categories.Where(c => c.Type == Web.Client.Models.TransactionType.Thu).ToList();
+                                var chiCategories = categories.Where(c => c.Type == Web.Client.Models.TransactionType.Chi).ToList();
+                                if (thuCategories.Any())
+                                {
+                                    <optgroup label="📥 THU">
+                                        @foreach (var c in thuCategories)
+                                        {
+                                            <option value="@c.Id">@c.CategoryName</option>
+                                        }
+                                    </optgroup>
+                                }
+                                if (chiCategories.Any())
+                                {
+                                    <optgroup label="📤 CHI">
+                                        @foreach (var c in chiCategories)
+                                        {
+                                            <option value="@c.Id">@c.CategoryName</option>
+                                        }
+                                    </optgroup>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số tiền (VNĐ) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" name="Amount" class="form-control" required min="1" placeholder="0" />
+                            <span class="input-group-text">đ</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea name="Description" class="form-control" rows="3" placeholder="Nhập mô tả giao dịch..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Thêm giao dịch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Chi tiết Giao dịch</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="35%">Ngày giao dịch:</th>
+                        <td id="detail_date"></td>
+                    </tr>
+                    <tr>
+                        <th>Danh mục:</th>
+                        <td id="detail_category"></td>
+                    </tr>
+                    <tr>
+                        <th>Số tiền:</th>
+                        <td id="detail_amount" class="fs-5 fw-bold"></td>
+                    </tr>
+                    <tr>
+                        <th>Mô tả:</th>
+                        <td id="detail_desc"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Chỉnh sửa Giao dịch</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="edit_id" />
+                    <div class="mb-3">
+                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                        <select name="CategoryId" id="edit_category" class="form-select" required>
+                            @if (categories != null)
+                            {
+                                var thuCategories = categories.Where(c => c.Type == Web.Client.Models.TransactionType.Thu).ToList();
+                                var chiCategories = categories.Where(c => c.Type == Web.Client.Models.TransactionType.Chi).ToList();
+                                if (thuCategories.Any())
+                                {
+                                    <optgroup label="📥 THU">
+                                        @foreach (var c in thuCategories)
+                                        {
+                                            <option value="@c.Id">@c.CategoryName</option>
+                                        }
+                                    </optgroup>
+                                }
+                                if (chiCategories.Any())
+                                {
+                                    <optgroup label="📤 CHI">
+                                        @foreach (var c in chiCategories)
+                                        {
+                                            <option value="@c.Id">@c.CategoryName</option>
+                                        }
+                                    </optgroup>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số tiền (VNĐ) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" name="Amount" id="edit_amount" class="form-control" required min="1" />
+                            <span class="input-group-text">đ</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea name="Description" id="edit_desc" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Delete" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="delete_id" />
+                    <div class="text-center">
+                        <i class="bi bi-exclamation-triangle text-warning display-1"></i>
+                        <p class="mt-3 fs-5">Bạn có chắc chắn muốn xóa giao dịch</p>
+                        <p class="fw-bold fs-4 text-danger" id="delete_name"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Hủy</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showDetails(id, date, category, desc, amount, isThu) {
+        document.getElementById('detail_date').textContent = date;
+        document.getElementById('detail_category').innerHTML = isThu ? 
+            '<span class="badge bg-success"><i class="bi bi-arrow-down-circle me-1"></i>' + category + '</span>' :
+            '<span class="badge bg-danger"><i class="bi bi-arrow-up-circle me-1"></i>' + category + '</span>';
+        document.getElementById('detail_amount').textContent = (isThu ? '+' : '-') + amount.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('detail_amount').className = isThu ? 'fs-5 fw-bold text-success' : 'fs-5 fw-bold text-danger';
+        document.getElementById('detail_desc').textContent = desc || '(Không có mô tả)';
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    }
+
+    function showEdit(id, amount, desc, categoryId) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_amount').value = amount;
+        document.getElementById('edit_desc').value = desc;
+        document.getElementById('edit_category').value = categoryId;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function showDelete(id, desc) {
+        document.getElementById('delete_id').value = id;
+        document.getElementById('delete_name').textContent = '"' + (desc || 'giao dịch này') + '"?';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+}

@@ -1,0 +1,178 @@
+@model Web.Client.Models.Match
+
+@{
+    ViewData["Title"] = "Ghi nhận Trận đấu";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-journal-plus me-2"></i>Ghi nhận Trận đấu mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="Format" class="form-label">Chế độ chơi</label>
+                            <select asp-for="Format" class="form-select" id="formatSelect">
+                                <option value="0">Đơn (Singles)</option>
+                                <option value="1">Đôi (Doubles)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="PlayedAt" class="form-label">Thời gian</label>
+                            <input asp-for="PlayedAt" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Trận xếp hạng?</label>
+                            <div class="form-check mt-2">
+                                <input asp-for="IsRanked" class="form-check-input" type="checkbox" />
+                                <label class="form-check-label" asp-for="IsRanked">
+                                    <i class="bi bi-trophy text-warning me-1"></i>Có tính xếp hạng
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Đội 1 -->
+                        <div class="col-md-5">
+                            <div class="card bg-success bg-opacity-10 border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Đội 1</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label asp-for="Player1Id" class="form-label">Người chơi 1 *</label>
+                                        <select asp-for="Player1Id" class="form-select" asp-items="ViewBag.Player1Id">
+                                            <option value="">-- Chọn --</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 doubles-field" style="display: none;">
+                                        <label asp-for="Player3Id" class="form-label">Người chơi 3 (Đội 1)</label>
+                                        <select asp-for="Player3Id" class="form-select" asp-items="ViewBag.Player3Id">
+                                            <option value="">-- Chọn --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tỷ số -->
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h5 class="text-muted">Tỷ số</h5>
+                                <div class="mb-2">
+                                    <input asp-for="ScoreTeam1" type="number" min="0" class="form-control form-control-lg text-center" placeholder="0" />
+                                </div>
+                                <div class="my-2"><strong>-</strong></div>
+                                <div>
+                                    <input asp-for="ScoreTeam2" type="number" min="0" class="form-control form-control-lg text-center" placeholder="0" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Đội 2 -->
+                        <div class="col-md-5">
+                            <div class="card bg-danger bg-opacity-10 border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0">Đội 2</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label asp-for="Player2Id" class="form-label">Người chơi 2 *</label>
+                                        <select asp-for="Player2Id" class="form-select" asp-items="ViewBag.Player2Id">
+                                            <option value="">-- Chọn --</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 doubles-field" style="display: none;">
+                                        <label asp-for="Player4Id" class="form-label">Người chơi 4 (Đội 2)</label>
+                                        <select asp-for="Player4Id" class="form-select" asp-items="ViewBag.Player4Id">
+                                            <option value="">-- Chọn --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-3">
+                        <label asp-for="Notes" class="form-label">Ghi chú</label>
+                        <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Nhập ghi chú (không bắt buộc)..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info" id="validationInfo">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Lưu ý:</strong> Không được chọn trùng người chơi trong cùng một trận đấu.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>Lưu trận đấu
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('formatSelect').addEventListener('change', function() {
+            var doublesFields = document.querySelectorAll('.doubles-field');
+            if (this.value === '1') { // Doubles
+                doublesFields.forEach(function(field) {
+                    field.style.display = 'block';
+                });
+            } else {
+                doublesFields.forEach(function(field) {
+                    field.style.display = 'none';
+                });
+            }
+        });
+        
+        // Validation: Không cho phép chọn trùng người chơi
+        var playerSelects = document.querySelectorAll('select[name^="Player"]');
+        playerSelects.forEach(function(select) {
+            select.addEventListener('change', validatePlayers);
+        });
+        
+        function validatePlayers() {
+            var selectedPlayers = [];
+            var isDuplicate = false;
+            playerSelects.forEach(function(select) {
+                if (select.value && select.value !== '') {
+                    if (selectedPlayers.includes(select.value)) {
+                        isDuplicate = true;
+                    }
+                    selectedPlayers.push(select.value);
+                }
+            });
+            
+            var info = document.getElementById('validationInfo');
+            if (isDuplicate) {
+                info.className = 'alert alert-danger';
+                info.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i><strong>Lỗi:</strong> Không được chọn trùng người chơi!';
+            } else {
+                info.className = 'alert alert-info';
+                info.innerHTML = '<i class="bi bi-info-circle me-1"></i><strong>Lưu ý:</strong> Không được chọn trùng người chơi trong cùng một trận đấu.';
+            }
+        }
+    </script>
+}
