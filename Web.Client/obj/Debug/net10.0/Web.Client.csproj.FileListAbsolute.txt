@@ -223,3 +223,4 @@ c:\Users\Shinji\Documents\backup hoctap\BackEnd\Backend\Kiemtra2\Web.Client\obj\
 c:\Users\Shinji\Documents\backup hoctap\BackEnd\Backend\Kiemtra2\Web.Client\obj\Debug\net10.0\Web.Client.pdb
 C:\Users\Shinji\Documents\backup hoctap\BackEnd\Backend\Kiemtra2\Web.Client\obj\Debug\net10.0\Web.Client.genruntimeconfig.cache
 C:\Users\Shinji\Documents\backup hoctap\BackEnd\Backend\Kiemtra2\Web.Client\obj\Debug\net10.0\ref\Web.Client.dll
+C:\Users\Shinji\Documents\backup hoctap\BackEnd\Backend\Kiemtra2\Web.Client\obj\Debug\net10.0\Web.Client.sourcelink.json

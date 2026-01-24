@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Web.API.Data;
 
@@ -11,9 +12,11 @@ using Web.API.Data;
 namespace Web.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260124140841_SeedingData")]
+    partial class SeedingData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,7 +244,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("133_Bookings", (string)null);
+                    b.ToTable("133_Bookings");
                 });
 
             modelBuilder.Entity("Web.API.Models.Challenge", b =>
@@ -283,7 +286,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("CreatorId");
 
-                    b.ToTable("133_Challenges", (string)null);
+                    b.ToTable("133_Challenges");
 
                     b.HasData(
                         new
@@ -374,7 +377,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("Player4Id");
 
-                    b.ToTable("133_Matches", (string)null);
+                    b.ToTable("133_Matches");
                 });
 
             modelBuilder.Entity("Web.API.Models.Member", b =>
@@ -415,7 +418,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("IdentityUserId");
 
-                    b.ToTable("133_Members", (string)null);
+                    b.ToTable("133_Members");
 
                     b.HasData(
                         new
@@ -500,7 +503,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("133_News", (string)null);
+                    b.ToTable("133_News");
 
                     b.HasData(
                         new
@@ -552,7 +555,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("133_Participants", (string)null);
+                    b.ToTable("133_Participants");
                 });
 
             modelBuilder.Entity("Web.API.Models.Transaction", b =>
@@ -580,7 +583,7 @@ namespace Web.API.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("133_Transactions", (string)null);
+                    b.ToTable("133_Transactions");
                 });
 
             modelBuilder.Entity("Web.API.Models.TransactionCategory", b =>
@@ -601,7 +604,7 @@ namespace Web.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("133_TransactionCategories", (string)null);
+                    b.ToTable("133_TransactionCategories");
 
                     b.HasData(
                         new
