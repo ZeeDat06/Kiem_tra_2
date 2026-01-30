@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "OdJhV4yep3I=",
+  "dgSpecHash": "2R5uSUbPevk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj",
+  "projectFilePath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Shinji\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\Shinji\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",

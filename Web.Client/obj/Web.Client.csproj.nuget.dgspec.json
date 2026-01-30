@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj": {}
+    "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj": {
+    "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj",
+        "projectUniqueName": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj",
         "projectName": "Web.Client",
-        "projectPath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj",
+        "projectPath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\Web.Client.csproj",
         "packagesPath": "C:\\Users\\Shinji\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\obj\\",
+        "outputPath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.Client\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Shinji\\AppData\\Roaming\\NuGet\\NuGet.Config"

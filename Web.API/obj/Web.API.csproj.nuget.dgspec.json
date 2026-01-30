@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {}
+    "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {
+    "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
+        "projectUniqueName": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
         "projectName": "Web.API",
-        "projectPath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
+        "projectPath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
         "packagesPath": "C:\\Users\\Shinji\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\obj\\",
+        "outputPath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Shinji\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -53,10 +53,13 @@
               "version": "[8.0.2, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.2, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
             }
           },
           "imports": [
