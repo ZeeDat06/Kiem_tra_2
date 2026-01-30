@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {}
+    "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {}
   },
   "projects": {
-    "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {
+    "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
+        "projectUniqueName": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
         "projectName": "Web.API",
-        "projectPath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
+        "projectPath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\Web.API.csproj",
         "packagesPath": "C:\\Users\\Shinji\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\obj\\",
+        "outputPath": "C:\\Users\\Shinji\\Documents\\backup hoctap\\BackEnd\\Backend\\Kiemtra2\\Web.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Shinji\\AppData\\Roaming\\NuGet\\NuGet.Config"

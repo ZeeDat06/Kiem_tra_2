@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # 1. SQL Server
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_server_container
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=MatKhauSieuManh123!@#
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  # 2. Web API C#
+  web_api:
+    build: .  # Dấu chấm nghĩa là tìm Dockerfile ngay thư mục hiện tại
+    container_name: csharp_api
+    restart: always
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+    environment:
+      # Chuỗi kết nối đến container db
+      - ConnectionStrings__DefaultConnection=Server=db;Database=Kiemtra2DB;User Id=sa;Password=MatKhauSieuManh123!@#;TrustServerCertificate=True;
+
+volumes:
+  sql_data:

@@ -8,37 +8,13 @@ Dự án gồm 2 phần chính:
 - **Web.API**: REST API Server (ASP.NET Core Web API)
 - **Web.Client**: Web Client giao diện người dùng (ASP.NET Core MVC)
 
-## 🚀 Hướng dẫn chạy project
+## 🚀 Hướng dẫn chạy project (Local Development)
 
-### Cách 1: Chạy với Docker Compose (Khuyến nghị)
-
-```bash
-# Clone project về máy
-git clone <repository-url>
-cd Kiemtra2
-
-# Khởi chạy toàn bộ hệ thống (Database + API + Client)
-docker compose up -d
-
-# Xem logs để theo dõi
-docker compose logs -f
-
-# Dừng hệ thống
-docker compose down
-```
-
-**Truy cập sau khi khởi chạy:**
-- 🌐 **Web Client**: http://localhost
-- 🔌 **Web API**: http://localhost:5000
-- 📚 **Swagger API Docs**: http://localhost:5000/swagger
-
-### Cách 2: Chạy Local (Development)
-
-#### Yêu cầu:
+### Yêu cầu:
 - .NET 8.0 SDK
 - SQL Server (LocalDB hoặc SQL Server Express)
 
-#### Bước 1: Cấu hình Connection String
+### Bước 1: Cấu hình Connection String
 
 Mở file `appsettings.Development.json` trong thư mục `Web.API` và `Web.Client`, cập nhật connection string:
 
@@ -50,7 +26,7 @@ Mở file `appsettings.Development.json` trong thư mục `Web.API` và `Web.Cli
 }
 ```
 
-#### Bước 2: Chạy Web.API
+### Bước 2: Chạy Web.API
 
 ```bash
 cd Web.API
@@ -59,7 +35,7 @@ dotnet ef database update
 dotnet run
 ```
 
-#### Bước 3: Chạy Web.Client (Terminal mới)
+### Bước 3: Chạy Web.Client (Terminal mới)
 
 ```bash
 cd Web.Client
@@ -67,80 +43,127 @@ dotnet restore
 dotnet run
 ```
 
-## 🐳 Deploy với Docker
-
-### Build và Push Docker Image
-
-```bash
-# Build image cho API
-cd Web.API
-docker build -t yourusername/votthupho-api:v1 .
-
-# Build image cho Client
-cd ../Web.Client
-docker build -t yourusername/votthupho-client:v1 .
-
-# Push lên Docker Hub
-docker login
-docker push yourusername/votthupho-api:v1
-docker push yourusername/votthupho-client:v1
-```
-
-### Docker Compose Configuration
-
-File `docker-compose.yml` đã được cấu hình sẵn với:
-- **SQL Server 2022**: Database server
-- **Web.API**: REST API trên port 5000
-- **Web.Client**: Web interface trên port 80
-
 ## 🌐 Deploy lên VPS Linux (Ubuntu)
 
 ### 1. Cài đặt môi trường trên VPS
 
 ```bash
+# SSH vào VPS
+ssh root@YOUR_VPS_IP
+
 # Cập nhật hệ thống
 sudo apt-get update
 
-# Cài đặt .NET 8.0
-sudo apt-get install -y dotnet-sdk-8.0 aspnetcore-runtime-8.0
+# Cài đặt .NET 8.0 Runtime
+sudo apt-get install -y aspnetcore-runtime-8.0
 
-# Cài đặt Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+# Kiểm tra
+dotnet --version
 ```
 
-### 2. Chạy với Docker Compose
+### 2. Cài đặt SQL Server 2022
 
 ```bash
-# Upload source code hoặc clone từ Git
-git clone <repository-url>
-cd Kiemtra2
+# Import GPG key
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | sudo tee /etc/apt/sources.list.d/mssql-server-2022.list
 
-# Khởi chạy
-docker compose up -d
+# Cài đặt SQL Server
+sudo apt-get update
+sudo apt-get install -y mssql-server
+
+# Cấu hình (chọn Developer Edition, đặt mật khẩu SA)
+sudo /opt/mssql/bin/mssql-conf setup
+
+# Kiểm tra
+systemctl status mssql-server
 ```
 
-### 3. Cấu hình Nginx Reverse Proxy (Optional)
+### 3. Publish và Deploy ứng dụng
+
+**Trên máy local:**
+```bash
+cd Web.API
+dotnet publish -c Release -o ./publish
+
+cd ../Web.Client
+dotnet publish -c Release -o ./publish
+```
+
+**Upload lên VPS và cấu hình:**
+```bash
+# Tạo thư mục
+sudo mkdir -p /var/www/votthupho-api
+sudo mkdir -p /var/www/votthupho-client
+
+# Upload files (dùng SCP hoặc WinSCP)
+# Cấp quyền
+sudo chown -R www-data:www-data /var/www/votthupho-api
+sudo chown -R www-data:www-data /var/www/votthupho-client
+```
+
+### 4. Tạo Systemd Service
+
+**Cho Web.API** (`/etc/systemd/system/votthupho-api.service`):
+```ini
+[Unit]
+Description=Vot Thu Pho Nui API
+
+[Service]
+WorkingDirectory=/var/www/votthupho-api
+ExecStart=/usr/bin/dotnet /var/www/votthupho-api/Web.API.dll
+Restart=always
+RestartSec=10
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://localhost:5000
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Cho Web.Client** (`/etc/systemd/system/votthupho-client.service`):
+```ini
+[Unit]
+Description=Vot Thu Pho Nui Client
+
+[Service]
+WorkingDirectory=/var/www/votthupho-client
+ExecStart=/usr/bin/dotnet /var/www/votthupho-client/Web.Client.dll
+Restart=always
+RestartSec=10
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://localhost:5001
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Kích hoạt services:**
+```bash
+sudo systemctl enable votthupho-api votthupho-client
+sudo systemctl start votthupho-api votthupho-client
+```
+
+### 5. Cấu hình Nginx Reverse Proxy
 
 ```bash
 sudo apt-get install -y nginx
 ```
 
-Tạo file cấu hình `/etc/nginx/sites-available/votthupho`:
-
+Tạo file `/etc/nginx/sites-available/votthupho`:
 ```nginx
 server {
     listen 80;
     server_name your_domain.com;
 
     location / {
-        proxy_pass http://localhost:80;
+        proxy_pass http://localhost:5001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection keep-alive;
         proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
@@ -151,14 +174,19 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection keep-alive;
         proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-### 4. Cài đặt SSL với Let's Encrypt
+```bash
+sudo ln -s /etc/nginx/sites-available/votthupho /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 6. Cài SSL với Let's Encrypt
 
 ```bash
 sudo apt-get install -y certbot python3-certbot-nginx
@@ -196,13 +224,12 @@ Khi chạy migration, hệ thống tự động tạo dữ liệu mẫu:
 | `GET /api/News` | Lấy danh sách tin tức |
 | `GET /api/Transactions` | Lấy danh sách giao dịch |
 
-📚 **Xem đầy đủ tại**: http://localhost:5000/swagger
+📚 **Swagger API Docs**: http://localhost:5000/swagger
 
 ## 📁 Cấu trúc Project
 
 ```
 Kiemtra2/
-├── docker-compose.yml          # Docker Compose configuration
 ├── README.md                   # Tài liệu hướng dẫn
 ├── Kiemtra2.sln               # Solution file
 │
@@ -210,7 +237,6 @@ Kiemtra2/
 │   ├── Controllers/            # API Controllers
 │   ├── Data/                   # DbContext & Migrations
 │   ├── Models/                 # Entity Models
-│   ├── Dockerfile              # Docker build file
 │   ├── Program.cs              # Entry point
 │   └── appsettings.json        # Configuration
 │
@@ -218,33 +244,16 @@ Kiemtra2/
     ├── Controllers/            # MVC Controllers
     ├── Views/                  # Razor Views
     ├── Models/                 # View Models
-    ├── Dockerfile              # Docker build file
     └── appsettings.json        # Configuration
 ```
 
 ## 📝 Các tính năng chính
 
-1. **Quản lý Members (Thành viên)**
-   - CRUD thành viên
-   - Theo dõi rank level
-   - Trạng thái hoạt động
-
-2. **Quản lý Challenges (Thử thách)**
-   - Tạo và quản lý các giải đấu
-   - Đăng ký tham gia
-   - Theo dõi kết quả
-
-3. **Quản lý Matches (Trận đấu)**
-   - Ghi nhận kết quả trận đấu
-   - Hỗ trợ đánh đơn/đánh đôi
-
-4. **Quản lý News (Tin tức)**
-   - Đăng tin tức CLB
-   - Phân loại theo danh mục
-
-5. **Quản lý Transactions (Thu chi)**
-   - Theo dõi thu chi
-   - Phân loại giao dịch
+1. **Quản lý Members (Thành viên)** - CRUD, theo dõi rank level
+2. **Quản lý Challenges (Thử thách)** - Tạo giải đấu, đăng ký tham gia
+3. **Quản lý Matches (Trận đấu)** - Ghi nhận kết quả đơn/đôi
+4. **Quản lý News (Tin tức)** - Đăng tin CLB
+5. **Quản lý Transactions (Thu chi)** - Theo dõi thu chi
 
 ## 🛠️ Tech Stack
 
@@ -252,7 +261,6 @@ Kiemtra2/
 - **Frontend**: ASP.NET Core MVC, Bootstrap 5
 - **Database**: SQL Server 2022
 - **ORM**: Entity Framework Core 8.0
-- **Containerization**: Docker & Docker Compose
 - **API Documentation**: Swagger/OpenAPI
 
 ## 👥 Tác giả
